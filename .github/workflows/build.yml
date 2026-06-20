@@ -31,9 +31,11 @@ jobs:
           (Get-Content build.bat) -replace 'copy examples\\i9750h.c CONFIGURATION.c', 'copy examples\i5_8265u.c CONFIGURATION.c' | Set-Content build.bat
 
       - name: Initialize Environment
+        shell: cmd
         run: call setup.bat
 
       - name: Compile EFI Driver
+        shell: cmd
         run: call build.bat
 
       - name: Upload Finished Artifact
