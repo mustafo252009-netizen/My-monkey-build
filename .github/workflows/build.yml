@@ -7,8 +7,10 @@ jobs:
   build:
     runs-on: windows-2022
     steps:
-      - name: Clone Build-PowerMonkey
-        run: git clone https://github.com .
+      - name: Checkout Build-PowerMonkey
+        uses: actions/checkout@v4
+        with:
+          repository: 'awyl/Build-PowerMonkey'
 
       - name: Inject Custom Safe Configuration
         shell: powershell
