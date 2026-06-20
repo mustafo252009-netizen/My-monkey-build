@@ -1,0 +1,41 @@
+name: Build Custom PowerMonkey
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Clone Build-PowerMonkey
+        run: git clone https://github.com .
+
+      - name: Inject Custom Safe Configuration
+        shell: powershell
+        run: |
+          $config = @"
+          #include "../CONFIGURATION.h"
+          void TargetSystemInit(void) {
+              ProcessorVoltages.CpuCoreVoltageOffset = -50;
+              ProcessorVoltages.CpuCacheVoltageOffset = -50;
+              ProcessorVoltages.GpuVoltageOffset = 0;
+              PchSettings.UnlockSmmLock = true;
+              PchSettings.DisablePchGbeLock = true;
+              ProcessorPowerLimits.PackagePowerLimit1 = 0; 
+              ProcessorPowerLimits.PackagePowerLimit2 = 0;
+          }
+          "@
+          Set-Content -Path "examples\i5_8265u.c" -Value $config
+          (Get-Content build.bat) -replace 'copy examples\\i9750h.c CONFIGURATION.c', 'copy examples\i5_8265u.c CONFIGURATION.c' | Set-Content build.bat
+
+      - name: Initialize Environment
+        run: call setup.bat
+
+      - name: Compile EFI Driver
+        run: call build.bat
+
+      - name: Upload Finished Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowerMonkey-i5-8265U
+          path: EFI/Boot/
